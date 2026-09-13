@@ -17,6 +17,97 @@ description: 当用户的回复本体只有一个英语单词或一个英语词�
 - 一行内出现多个互不关联的单词（非约定俗成的词组）：不视为单条输入，按普通对话处理。
 - 大小写不敏感；专有名词、缩写（如 `NASA`、`per se`）同样按单词/词组处理，释义需体现其专有含义。
 
+## 词条标记格式
+
+输出时，每个词条的标题行必须加上 `#card` 标记：
+
+```
+- <词条内容> #card
+```
+
+示例：
+
+```
+- perplex #card
+```
+
+多行输入时，每个词条独立一行：
+
+```
+- perplex #card
+- enforce #card
+```
+
+## 派生词合并规则
+
+当用户输入多个互为派生的单词/词组时，合并输出并进行词义比较：
+
+### 合并条件
+
+以下情况应合并到同一个输出块中：
+
+1. **同词族派生**：如 `enforce`、`enforced`、`enforcement`（同一词根的不同词性形式）
+2. **相同前缀**：如 `enforce`、`endorse`、`enable`（都是 `en-` 前缀）
+3. **相同后缀**：如 `normalize`、`energize`、`customize`（都是 `-ize` 后缀）
+4. **字形相近易混淆**：如 `strike`、`strive`、`stroke`
+
+### 合并输出格式
+
+#### 派生关系（同一词族）
+
+```
+- enforce enforced enforcement #card
+```
+
+合并输出，逐项比较词义差异，格式如下：
+
+```
+- 发音：英 /ɪnˈfɔːrs/；美 /ɪnˈfɔːrs/。
+- 词义比较
+  - enforce (v.)：强制执行；实施
+  - enforced (adj.)：强制的；被实施的
+  - enforcement (n.)：执行；实施； enforcement
+- 近义词：...（同上）
+- 反义词：...（同上）
+- 例句
+  - ...（每个词条各出例句）
+  - ...
+```
+
+#### 易混淆关系（不同词族）
+
+```
+- strike vs strive vs stroke #card
+```
+
+用 `vs` 分隔，逐项比较词义差异：
+
+```
+- 词义比较
+  - strike (v.)：打击；罢工
+  - strive (v.)：努力；奋斗
+  - stroke (n.)：一笔； stroke
+- 近义词：...（分别标注）
+- 反义词：...（分别标注）
+- 例句
+  - strike: He went on strike for better wages.
+    - 他为了更好的工资而罢工。
+  - strive: She strives for excellence in everything.
+    - 她在各个方面都追求卓越。
+  - stroke: The artist added one final stroke to the painting.
+    - 艺术家给画作添加了最后一笔。
+```
+
+### 词组易混淆处理
+
+词组之间若容易混淆，使用软换行（`
+`）间隔：
+
+```
+- try to do something
+  try doing something #card
+```
+
 ## 输出结构（按顺序）
 
 对每个输入词条，依次输出以下内容；每一类内容至少占一个独立的顶层无序列表项：
@@ -48,6 +139,7 @@ description: 当用户的回复本体只有一个英语单词或一个英语词�
 | phr. | 词组 |
 
 - 上述列表之外出现的词性（如「限定词」），用中文描述，不用缩写。
+- 词组统一用 `phr.` 标注，不在上述表内的短语用中文描述。
 
 ## 排版规则（硬性要求）
 
@@ -62,17 +154,23 @@ description: 当用户的回复本体只有一个英语单词或一个英语词�
 
 「例句」一节统一使用两层缩进嵌套：
 
+```
 - 例句
   - <英文例句>
     - <中文释义>
+```
 
 「常用固定搭配」内的例句使用 `Example:` 前缀，共三层缩进：
 
+```
 - <搭配>（<中文含义>）
   - Example: <英文例句>
     - <中文释义>
+```
 
 ## 完整示例
+
+### 示例一：单单词输入
 
 输入：
 
@@ -82,6 +180,8 @@ perplex
 
 输出：
 
+```
+- perplex #card
 - 发音：英 /pəˈpleks/；美 /pərˈpleks/。
 - v. 使困惑；使迷惑；使为难。
 - v. 使复杂化；使难解。
@@ -104,3 +204,124 @@ perplex
   - per-（完全，贯穿）+ plex（编织，折叠），源自拉丁语 perplexus。
 - 联想记忆
   - per（完全）+ plex（编织）→ 所有线索完全编织缠绕在一起，理不清，因此使人困惑。
+```
+
+### 示例二：派生词合并输入
+
+输入：
+
+```
+enforce
+enforced
+enforcement
+```
+
+输出：
+
+```
+- enforce enforced enforcement #card
+- 发音：英 /ɪnˈfɔːs/；美 /ɪnˈfɔːrs/。
+- 词义比较
+  - enforce (v.)：强制执行；实施
+  - enforced (adj.)：强制的；被实施的
+  - enforcement (n.)：执行；实施； enforcement
+- 近义词：compel（强迫）；mandate（命令）；implement（实施）
+- 反义词：neglect（忽视）；ignore（忽略）
+- 例句
+  - The government enforced the new regulations strictly.
+    - 政府严格执行了新法规。
+  - The enforced silence was unbearable.
+    - 被迫的沉默令人难以忍受。
+  - The enforcement of the law requires public cooperation.
+    - 法律的执行需要公众合作。
+- 词根拆分
+  - en-（使）+ force（力量），源自拉丁语 infortiare。
+- 联想记忆
+  - en（使）+ force（力量）→ 施加力量使其执行 → 强制执行。
+```
+
+### 示例三：易混淆词对比输入
+
+输入：
+
+```
+strike
+strive
+stroke
+```
+
+输出：
+
+```
+- strike vs strive vs stroke #card
+- 发音：strike 英 /straɪk/；美 /straɪk/。strive 英 /straɪv/；美 /straɪv/。stroke 英 /strəʊk/；美 /stroʊk/。
+- 词义比较
+  - strike (v.)：打击；罢工；突然想到
+  - strive (v.)：努力；奋斗；力争
+  - stroke (n.)：一笔； stroke；打击
+- 近义词
+  - strike：hit（打）；protest（抗议）
+  - strive：struggle（挣扎）；endeavor（努力）
+  - stroke：hit（击）；brush（刷）
+- 反义词
+  - strike：appease（安抚）；cooperate（合作）
+  - strive：relax（放松）；give up（放弃）
+  - stroke：hesitate（犹豫）
+- 例句
+  - strike: The workers went on strike for higher wages.
+    - 工人们罢工要求提高工资。
+  - strive: She strives to achieve her goals despite difficulties.
+    - 她努力克服困难实现目标。
+  - stroke: The painter added one final stroke to the canvas.
+    - 画家给画布添加了最后一笔。
+```
+
+### 示例四：易混淆词组对比输入
+
+输入：
+
+```
+try to do something
+try doing something
+```
+
+输出：
+
+```
+- try to do something
+  try doing something #card
+- 发音：英 /traɪ tuː duː/；美 /traɪ tu du/。
+- 词义比较
+  - try to do something (phr.)：努力做某事（强调意图和尝试，不一定成功）
+  - try doing something (phr.)：尝试做某事（强调试验某种方法，看效果如何）
+- 近义词
+  - try to do something：attempt to do（试图做）；endeavor to do（尽力做）
+  - try doing something：test out（测试）；experiment with（试验）
+- 例句
+  - try to do something: He tried to open the window but it was stuck.
+    - 他努力想打开窗户，但窗户卡住了。
+  - try doing something: You should try adding some sugar to balance the flavor.
+    - 你应该试试加点糖来平衡味道。
+```
+
+## 多行输入处理
+
+当用户输入多行时，每行独立处理，按顺序输出：
+
+输入：
+
+```
+perplex
+enforce
+```
+
+输出：先输出 perplex 的完整结构，再输出 enforce 的完整结构，中间空一行分隔。
+
+## 注意事项
+
+- 派生词合并时，重点展示词形变化和词义差异，帮助用户理解词族的内在联系。
+- 易混淆词对比时，重点突出语义重心和使用场景的区别。
+- 词组对比时，重点说明语法结构和语用差异。
+- 所有内容严格遵守排版规范，不得出现 emoji、粗体、斜体、删除线、标题、代码块、表格等。
+- 每个输出部分至少是一个独立的无序列表项。
+- 能用一行展示的内容，在描述词后加冒号同行呈现；不能一行的拆成多行，用嵌套列表。
